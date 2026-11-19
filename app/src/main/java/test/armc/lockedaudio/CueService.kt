@@ -45,6 +45,7 @@ class CueService : Service() {
     private var running = false
     private var startWall = 0L
     private var startUptime = 0L
+    private var wakeLock: PowerManager.WakeLock? = null
 
     private val attrs: AudioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -68,7 +69,12 @@ class CueService : Service() {
         startUptime = SystemClock.uptimeMillis()
 
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        TestLog.add(this, "---- START mode=$mode, phone=${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+        // Version 2: hold a partial wake lock (CPU stays on, screen may be off) for the run. Safety timeout 20 minutes.
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "armc:cues").also {
+            it.setReferenceCounted(false)
+            it.acquire(20 * 60 * 1000L)
+        }
+        TestLog.add(this, "---- START v2 (wake lock) mode=$mode, phone=${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
         TestLog.add(this, "Battery optimisation ignored for this app: ${pm.isIgnoringBatteryOptimizations(packageName)}; battery saver on: ${pm.isPowerSaveMode}")
 
         if (mode == MODE_SPEECH) startSpeechEngine()
@@ -130,7 +136,7 @@ class CueService : Service() {
         TestLog.add(
             this,
             "Cue $index due ${TestLog.clock(due)}, fired ${TestLog.clock(now)}, late ${(now - due) / 1000} s; " +
-                "screen on: ${pm.isInteractive}; doze: ${pm.isDeviceIdleMode}"
+                "screen on: ${pm.isInteractive}; doze: ${pm.isDeviceIdleMode}; wake lock held: ${wakeLock?.isHeld}"
         )
         if (mode == MODE_SPEECH) speak(index) else playClip(index)
         if (index < TOTAL_CUES) {
@@ -176,11 +182,18 @@ class CueService : Service() {
     private fun finish() {
         running = false
         handler.removeCallbacksAndMessages(null)
+        releaseWakeLock()
         tts?.stop()
         tts?.shutdown()
         tts = null
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
+    }
+
+    private fun releaseWakeLock() {
+        val lock = wakeLock
+        if (lock != null && lock.isHeld) lock.release()
+        wakeLock = null
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -190,6 +203,7 @@ class CueService : Service() {
 
     override fun onDestroy() {
         TestLog.add(this, "Service destroyed")
+        releaseWakeLock()
         tts?.shutdown()
         super.onDestroy()
     }
