@@ -1,0 +1,22 @@
+# Android / Gradle build output and local files
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+app/build/
+build/
+# Signing material and secrets: never commit
+*.jks
+*.keystore
+*.p12
+keystore.properties
+google-services.json
+.env
+# Recorded tracks or logs from tests
+*.gpx
+cue_log.txt
