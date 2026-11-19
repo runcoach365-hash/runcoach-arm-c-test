@@ -26,8 +26,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          cp app/build/outputs/apk/debug/app-debug.apk "locked-audio-test-v0.2-build${{ github.run_number }}.apk"
           gh release create "build-${{ github.run_number }}" \
-            app/build/outputs/apk/debug/app-debug.apk \
-            --prerelease \
+            "locked-audio-test-v0.2-build${{ github.run_number }}.apk" \
             --title "Debug build ${{ github.run_number }}" \
             --notes "Throwaway debug build of the locked-screen audio test. No personal data."

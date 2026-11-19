@@ -39,8 +39,13 @@ class MainActivity : Activity() {
             fitsSystemWindows = true
         }
 
+        val version = try {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        } catch (e: Exception) {
+            "?"
+        }
         root.addView(TextView(this).apply {
-            text = "Locked-screen audio test.\nPress a button, lock the phone, put it in your pocket. " +
+            text = "Locked-screen audio test, version $version.\nPress a button, lock the phone, put it in your pocket. " +
                 "A cue plays every minute for 10 minutes. Unlock afterwards and read the log below."
             textSize = 15f
         })
