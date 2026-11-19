@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "RN shell test",
+    "slug": "rn-shell-test",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "test.armc.rnshell"
+    }
+  }
+}

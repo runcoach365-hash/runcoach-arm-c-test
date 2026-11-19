@@ -20,3 +20,10 @@ google-services.json
 # Recorded tracks or logs from tests
 *.gpx
 cue_log.txt
+
+# Generated at build time (rn-shell)
+rn-shell/node_modules/
+rn-shell/android/
+rn-shell/ios/
+rn-shell/.expo/
+node_modules/

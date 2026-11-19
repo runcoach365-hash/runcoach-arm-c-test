@@ -3,6 +3,9 @@ name: Build debug APK
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'rn-shell/**'
+      - '.github/workflows/rn-shell.yml'
   workflow_dispatch:
 
 permissions:
